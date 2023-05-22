@@ -62,6 +62,7 @@ const history = reactive([
 ])
 
 const message = ref("")
+const isLoad = ref(false)
 
 const vLongPress = onLongPress
 
@@ -82,7 +83,7 @@ async function onSelect(item) {
     await clipboard.writeText(asData.text)
     showToast('消息文本已复制到剪贴板！')
   }
-  if (item.name == asData.actions[1].name) {
+  if (!isLoad && item.name == asData.actions[1].name) {
     const index = history.findIndex(item => item.date == asData.id)
     history.splice(index, 1)
     showToast('删除成功！')
@@ -95,13 +96,36 @@ function showActionSheet(text, id) {
   asData.id = id
 }
 
+function handleMessage(word, error, done) {
+  // chatgpt 消息框数据所对应的索引
+  const index = history.length - 1
+  // 请求错误，进行提示
+  if (error) {
+    history[index].text = "错误，请检查你的秘钥和网络！"
+    retrun
+  }
+  // 请求结束，关闭加载动画、禁用打断按钮
+  if (done) {
+    isLoad.value = false
+    return
+  }
+  // 将接受到的当个文字放入 DOM 元素中
+  history[index].text += word
+}
+
 async function sendMsg() {
-  console.log(history)
-  history.push({
-    date: Date.now(), role: 'user', text: message.value
-  })
-  await send(message.value)
+  // 将自身编辑的消息放置到界面中
+  history.push({ date: Date.now(), role: 'user', text: message.value })
+  // 添加一条新的空白消息，由于接收 chatgpt 的回复
+  history.push({ date: Date.now() + 2000, role: 'system', text: '' })
+  // 显示加载动画
+  isLoad.value = true
+  // 获取要发送的消息内容
+  const content = message.value
+  // 清空当前编辑窗口
   message.value = ""
+  // 发送请求
+  await send(content, handleMessage)
 }
 </script>
 
@@ -145,6 +169,7 @@ async function sendMsg() {
       line-height: 1.6em;
       position: relative;
       border-radius: 6px;
+      min-height: 22px;
 
       &:nth-child(1) {
         margin-top: 10px;

@@ -1,42 +1,38 @@
-import { createParser } from 'eventsource-parser'
+import { fetchEventSource } from "@microsoft/fetch-event-source"
 
-export async function send(message) {
-  const decoder = new TextDecoder('utf-8')
-
-  const postData = {
-    model: 'gpt-3.5-turbo',
-    messages: [{ role: 'user', content: message }],
-    stream: true
-  }
-  const baseUrl = ' https://openai.api2d.net'
-  const path = '/v1/chat/completions'
+export async function send(content, handleMessage) {
+  // 请求地址
+  const baseUrl = localStorage.baseUrl || 'https://openai.api2d.net'
+  // 请求方式
+  const method = 'POST'
+  // 请求头
   const headers = {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer fk189338-wmSuSBdJtOHylBQOrBqyYUKMaqdWdZm6'
+    'Authorization': 'Bearer fk189338-hWotPqmwHi7x2JrU0ZkUsxwkV7QmOlzu'
   }
-
-  const res = await fetch(`${baseUrl}/v1/chat/completions`, {
-    headers, method: 'POST', body: JSON.stringify(postData)
+  // 请求体
+  const body = JSON.stringify({
+    model: 'gpt-3.5-turbo',
+    messages: [{ role: 'user', content }],
+    stream: true
   })
 
-  if (res.status !== 200) {
-    throw new Error('请求出错!')
-  }
-
-  const reader = res.body.getReader()
-  let chunks = []
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    chunks.push(value)
-    console.log(decoder.decode(value))
-  }
-  const buffer = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0))
-  let offset = 0
-  for (const chunk of chunks) {
-    buffer.set(chunk, offset)
-    offset += chunk.length
-  }
-
-  const data = decoder.decode(buffer)
+  await fetchEventSource(`${baseUrl}/v1/chat/completions`, {
+    headers, method, body,
+    // 处理收到的消息
+    onmessage(event) {
+      try {
+        // 此处必须放在 try 块中，如果捕获到异常则说明字符串中出现 '[DONE]'，这标准这传输完成
+        // 如果代码没有放在 try catch 块中，则会因为异常没有被捕获，而重新发起请求，
+        // 至于为什么会这样，我没看明白
+        const data = JSON.parse(event.data)
+        // 判断消息是否存在，存在则添加到消息框中, 第一次获取的肯定是 undefined, 直接返回空串
+        handleMessage(data.choices[0].delta.content || '')
+      } catch {
+        // 出现报错，说明连接关闭
+        handleMessage(null, null, true)
+      }
+    },
+    onerror(err) { handleMessage(null, err) }
+  })
 }
