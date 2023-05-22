@@ -8,10 +8,10 @@
       <template #title>
         <span>{{ role.name }}</span>
         <br />
-        <span class="message-count">共 86 条对话</span>
+        <span class="message-count">共 {{ history.length }} 条对话</span>
       </template>
       <template #right>
-        <van-icon name="manager" size="24" />
+        <van-icon name="smile" size="24" />
       </template>
     </van-nav-bar>
     <!-- 消息记录 -->
@@ -27,12 +27,14 @@
     <div class="editor">
       <div class="form">
         <van-field v-model="message" rows="1" autosize type="textarea" placeholder="输入内容" />
-        <van-button icon="icon/发送.png" type="primary" class="btn-send" @click="sendMsg">发送</van-button>
+        <van-button :icon="isLoad ? 'stop-circle' : 'icon/send.png'" :type="isLoad ? 'warning' : 'primary'"
+          class="btn-send" @click="sendMsg">{{ isLoad ? '停止' : '发送' }}</van-button>
       </div>
     </div>
   </div>
   <!-- 动作面板 -->
-  <van-action-sheet @select="onSelect" v-model:show="asData.isShow" :actions="asData.actions" close-on-click-action />
+  <van-action-sheet :disabled="isLoad" @select="onSelect" v-model:show="asData.isShow" :actions="asData.actions"
+    close-on-click-action />
 </template>
 
 <script setup>
@@ -58,7 +60,9 @@ const history = reactive([
   {
     date: '2022/10/15 18:16:21', role: 'user', text: '# 你好，横向认识你!'
   },
-  { date: '2022/10/15 18:16:25', role: 'system', text: '你好，有问题请就可能得询问我，我会给你我所知道的一切解答!' },
+  {
+    date: '2022/10/15 18:16:25', role: 'system', text: `# 标题`
+  }
 ])
 
 const message = ref("")
@@ -83,7 +87,7 @@ async function onSelect(item) {
     await clipboard.writeText(asData.text)
     showToast('消息文本已复制到剪贴板！')
   }
-  if (!isLoad && item.name == asData.actions[1].name) {
+  if (!isLoad.value && item.name == asData.actions[1].name) {
     const index = history.findIndex(item => item.date == asData.id)
     history.splice(index, 1)
     showToast('删除成功！')
@@ -96,7 +100,7 @@ function showActionSheet(text, id) {
   asData.id = id
 }
 
-function handleMessage(word, error, done) {
+function handleMessage(word, error, done, controller) {
   // chatgpt 消息框数据所对应的索引
   const index = history.length - 1
   // 请求错误，进行提示
@@ -111,19 +115,28 @@ function handleMessage(word, error, done) {
   }
   // 将接受到的当个文字放入 DOM 元素中
   history[index].text += word
+  // 用户选择停止消息
+  if (!isLoad.value) controller.abort()
 }
 
 async function sendMsg() {
+  // 当前消息未接收完毕时，禁止发送下一条信息
+  if (isLoad.value) {
+    isLoad.value = false
+    return
+  }
+  // 获取要发送的消息内容
+  const content = message.value.trim()
+  // 清空当前编辑窗口
+  message.value = ""
+  // 消息框未空白时，禁止发送
+  if (content == '') return
   // 将自身编辑的消息放置到界面中
-  history.push({ date: Date.now(), role: 'user', text: message.value })
+  history.push({ date: Date.now(), role: 'user', text: content })
   // 添加一条新的空白消息，由于接收 chatgpt 的回复
   history.push({ date: Date.now() + 2000, role: 'system', text: '' })
   // 显示加载动画
   isLoad.value = true
-  // 获取要发送的消息内容
-  const content = message.value
-  // 清空当前编辑窗口
-  message.value = ""
   // 发送请求
   await send(content, handleMessage)
 }
