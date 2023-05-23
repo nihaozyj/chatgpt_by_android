@@ -1,6 +1,12 @@
-import { Button, Field, Icon, NavBar, Tag, ActionSheet, Divider } from 'vant'
+import {
+  Button, Field, Icon, NavBar, Tag, Radio,
+  ActionSheet, Divider, Empty, NoticeBar, Cell, Slider, Switch
+} from 'vant'
 
-const components = [Button, NavBar, Field, Icon, Tag, ActionSheet, Divider]
+const components = [
+  Button, NavBar, Field, Icon, Tag, Radio,
+  ActionSheet, Divider, Empty, NoticeBar, Cell, Slider, Switch
+]
 
 export default function (app) {
   components.forEach(component => {

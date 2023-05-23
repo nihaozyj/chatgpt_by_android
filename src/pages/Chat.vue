@@ -64,23 +64,30 @@ history = reactive(JSON.stringify(history))
 
 // history 数据的结构如下:
 // {
+//   historyId: 1,
 //   role: { name: '文档机器人', presuppose: [{ role: 'user', text: '请使用 markdown 进行回复！' }] },
 //   dialog: [ { date: '1684808101175', role: 'user', text: '# 你好!' } ]
 // }
 
 const message = ref("")
 const isLoad = ref(false)
+// 用户滚动区
+let bScroll = null
 
 const vLongPress = onLongPress
 
 watch(history.dialog, async () => {
-  window.bs.refresh()
-  window.bs.scrollBy(0, window.bs.maxScrollY - window.bs.y)
+  bScroll.refresh()
+  bScroll.scrollBy(0, bScroll.maxScrollY - bScroll.y)
+})
+
+watch(history.role, async () => {
+  // 更新对话对象的预设
 })
 
 onMounted(() => {
   // 创建聊天消息滚动区域
-  window.bs = new BScroll('.message-scroll', {})
+  bScroll = new BScroll('.message-scroll', {})
 })
 
 async function onSelect(item) {
@@ -106,39 +113,29 @@ function showActionSheet(text, id) {
 }
 
 function handleMessage(word, error, done, controller) {
-  // chatgpt 消息框数据所对应的索引
   const index = history.dialog.length - 1
   // 请求错误，进行提示
-  if (error) {
-    history.dialog[index].text = "错误，请检查你的秘钥和网络！"
-    retrun
-  }
+  if (error) return (history.dialog[index].text = "错误，请检查你的秘钥和网络！")
   // 请求结束，关闭加载动画、禁用打断按钮
-  if (done) {
-    isLoad.value = false
-    return
-  }
+  if (done) return (isLoad.value = false)
+  // 用户选择停止消息
+  if (!isLoad.value) return (controller.abort())
   // 将接受到的当个文字放入 DOM 元素中
   history.dialog[index].text += word
-  // 用户选择停止消息
-  if (!isLoad.value) controller.abort()
 }
 
 async function sendMsg() {
+  // 消息框未空白时，禁止发送
+  if (content == '') return
   // 当前消息未接收完毕时，禁止发送下一条信息
-  if (isLoad.value) {
-    isLoad.value = false
-    return
-  }
+  if (isLoad.value) return (isLoad.value = false)
   // 获取要发送的消息内容
   const content = message.value.trim()
   // 清空当前编辑窗口
   message.value = ""
-  // 消息框未空白时，禁止发送
-  if (content == '') return
   // 将自身编辑的消息放置到界面中
   history.dialog.push({ date: Date.now(), role: 'user', text: content })
-  // 添加一条新的空白消息，由于接收 chatgpt 的回复
+  // 添加一条新的空白消息，用于接收 chatgpt 的回复
   history.dialog.push({ date: Date.now() + 2000, role: 'system', text: '' })
   // 显示加载动画
   isLoad.value = true
