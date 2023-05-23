@@ -6,9 +6,9 @@
         <van-icon name="arrow-left" size="24" />
       </template>
       <template #title>
-        <span>{{ role.name }}</span>
+        <span>{{ history.role.name }}</span>
         <br />
-        <span class="message-count">共 {{ history.length }} 条对话</span>
+        <span class="message-count">共 {{ history.dialog.length }} 条对话</span>
       </template>
       <template #right>
         <van-icon name="smile" size="24" />
@@ -17,7 +17,15 @@
     <!-- 消息记录 -->
     <div class="message-scroll">
       <div class="content">
-        <div class="item" :class="msg.role" v-for="msg in history" :key="msg.date"
+        <!-- 机器人预设 -->
+        <div class="item" :class="msg.role" v-for="msg in history.role.presuppose" :key="msg.date"
+          v-Long-press="() => showActionSheet(msg.text, msg.date)">
+          <v-md-preview :text="msg.text" />
+        </div>
+        <van-divider v-if="history.role.presuppose.length != 0"
+          style="color: #1989fa;border-color: #1989fa">上方为预设消息</van-divider>
+        <!-- 用户和机器人的对话 -->
+        <div class="item" :class="msg.role" v-for="msg in history.dialog" :key="msg.date"
           v-Long-press="() => showActionSheet(msg.text, msg.date)">
           <v-md-preview :text="msg.text" />
         </div>
@@ -39,57 +47,54 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
-import BScroll from '@better-scroll/core'
+import { useRouter } from 'vue-router'
 import { onLongPress } from '@/utils'
 import { showToast } from 'vant'
 import { send } from '@/api'
 
-const role = reactive({
-  name: '问答机器人',
-  presuppose: []
-})
+import BScroll from '@better-scroll/core'
 
-const asData = reactive({
-  isShow: false,
-  actions: [{ name: '复制文本' }, { name: '删除记录' }],
-  text: '',
-  id: ''
-})
+const router = useRouter()
+const asData = reactive({ isShow: false, actions: [{ name: '复制文本' }, { name: '删除记录' }], text: '', id: '' })
 
-const history = reactive([
-  {
-    date: '2022/10/15 18:16:21', role: 'user', text: '# 你好，横向认识你!'
-  },
-  {
-    date: '2022/10/15 18:16:25', role: 'system', text: `# 标题`
-  }
-])
+// 获取历史对话数据，如果没有则返回到首页
+const history = localStorage.history || router.push('/home')
+// 将JSON文本转为响应式对象
+history = reactive(JSON.stringify(history))
+
+// history 数据的结构如下:
+// {
+//   role: { name: '文档机器人', presuppose: [{ role: 'user', text: '请使用 markdown 进行回复！' }] },
+//   dialog: [ { date: '1684808101175', role: 'user', text: '# 你好!' } ]
+// }
 
 const message = ref("")
 const isLoad = ref(false)
 
 const vLongPress = onLongPress
 
-watch(history, async () => {
+watch(history.dialog, async () => {
   window.bs.refresh()
   window.bs.scrollBy(0, window.bs.maxScrollY - window.bs.y)
 })
 
 onMounted(() => {
+  // 创建聊天消息滚动区域
   window.bs = new BScroll('.message-scroll', {})
 })
 
 async function onSelect(item) {
   if (item.name == asData.actions[0].name) {
     const clipboard = navigator.clipboard
-    if (clipboard == undefined)
-      return showToast('复制失败，你的浏览器不支持改功能！')
+    // 判断用户浏览器是否支持操作剪贴板
+    if (clipboard == undefined) return showToast('复制失败，你的浏览器不支持改功能！')
+    // 将文本写入剪贴板
     await clipboard.writeText(asData.text)
     showToast('消息文本已复制到剪贴板！')
   }
-  if (!isLoad.value && item.name == asData.actions[1].name) {
-    const index = history.findIndex(item => item.date == asData.id)
-    history.splice(index, 1)
+  else if (item.name == asData.actions[1].name && !isLoad.value) {
+    const index = history.dialog.findIndex(item => item.date == asData.id)
+    history.dialog.splice(index, 1)
     showToast('删除成功！')
   }
 }
@@ -102,10 +107,10 @@ function showActionSheet(text, id) {
 
 function handleMessage(word, error, done, controller) {
   // chatgpt 消息框数据所对应的索引
-  const index = history.length - 1
+  const index = history.dialog.length - 1
   // 请求错误，进行提示
   if (error) {
-    history[index].text = "错误，请检查你的秘钥和网络！"
+    history.dialog[index].text = "错误，请检查你的秘钥和网络！"
     retrun
   }
   // 请求结束，关闭加载动画、禁用打断按钮
@@ -114,7 +119,7 @@ function handleMessage(word, error, done, controller) {
     return
   }
   // 将接受到的当个文字放入 DOM 元素中
-  history[index].text += word
+  history.dialog[index].text += word
   // 用户选择停止消息
   if (!isLoad.value) controller.abort()
 }
@@ -132,9 +137,9 @@ async function sendMsg() {
   // 消息框未空白时，禁止发送
   if (content == '') return
   // 将自身编辑的消息放置到界面中
-  history.push({ date: Date.now(), role: 'user', text: content })
+  history.dialog.push({ date: Date.now(), role: 'user', text: content })
   // 添加一条新的空白消息，由于接收 chatgpt 的回复
-  history.push({ date: Date.now() + 2000, role: 'system', text: '' })
+  history.dialog.push({ date: Date.now() + 2000, role: 'system', text: '' })
   // 显示加载动画
   isLoad.value = true
   // 发送请求
@@ -175,6 +180,12 @@ async function sendMsg() {
       grid-template-columns: 1fr;
       padding-bottom: 50px;
       gap: 10px;
+
+      .van-divider {
+        color: $mainColor;
+        border-color: $mainColor;
+        font-size: .1em;
+      }
     }
 
     .item {
