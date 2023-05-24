@@ -1,25 +1,21 @@
 <template>
-  <div class="container bright">
+  <div class="container" :class="setting.theme ? 'bright' : 'dark'" :style="'font-size:' + setting.fontSize + 'em'">
     <!-- 头部导航 -->
-    <van-nav-bar title="GPT相关配置" left-arrow />
+    <van-nav-bar title="GPT相关配置" left-arrow @click-left="router.back()" />
     <div class="setting-scroll">
-      <div class="setting content">
+      <div class="setting">
         <div class="block">
           <div class="item">
             <h3>主题（ 暗 / 亮 ）</h3>
-            <van-switch v-model="isBright" />
+            <van-switch v-model="setting.theme" />
           </div>
           <div class="item">
             <h3>字体大小</h3>
-            <van-slider v-model="setting.fontSize" max="1.5" min="0.5" step="0.1">
+            <van-slider v-model="setting.fontSize" max="1.3" min="0.8" step="0.01">
               <template #button>
                 <div class="custom-button">{{ setting.fontSize }}</div>
               </template>
             </van-slider>
-          </div>
-          <div class="item">
-            <h3>启用 Markdown 预览</h3>
-            <van-switch v-model="setting.useMarkdownView" />
           </div>
         </div>
         <div class="block">
@@ -34,8 +30,8 @@
           <div class="item">
             <h3>模型</h3>
             <select v-model="setting.model">
-              <option>gpt-4</option>
               <option>gpt-3.5-turbo</option>
+              <option>gpt-4</option>
             </select>
           </div>
           <div class="item">
@@ -59,7 +55,7 @@
             </van-slider>
           </div>
           <div class="item">
-            <h3>附带历史消息数</h3>
+            <h3>携带历史消息数</h3>
             <van-slider v-model="setting.historyNumber" max="10" min="0" step="1">
               <template #button>
                 <div class="custom-button">{{ setting.historyNumber }}</div>
@@ -73,62 +69,170 @@
             <van-icon name="arrow" />
           </div>
           <div class="item">
-            <h3>给个赞助吧！</h3>
+            <h3>帮助文档</h3>
+            <van-icon name="arrow" />
+          </div>
+          <div class="item">
+            <h3>打赏</h3>
             <van-icon name="arrow" />
           </div>
         </div>
-        <van-button type="primary">恢复默认值</van-button>
+        <van-button type="primary" @click="reset()">恢复默认值</van-button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref, onMounted, watch } from 'vue'
+import { reactive, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { getBalance } from '@/api'
 
-import BScroll from '@better-scroll/core'
+const router = useRouter()
+const setting = reactive({})
 
-// 主题
-const isBright = ref(true)
-
-const setting = reactive({
-  // 主题 取值为 bright/dark
-  theme: 'bright',
-  // 字体大小 单位为 em
-  fontSize: 1,
-  // 是否使用markdown预览消息
-  useMarkdownView: true,
-  // 接口令牌
-  key: '',
-  // 请求的地址
-  baseUrl: 'https://api.openai.com',
-  // gpt 的模型
-  model: 'gpt-3.5-turbo',
-  // 余额
-  balance: 0,
-  // 随机性
-  temperature: 0.5,
-  // 单次信息的最大token
-  maxToken: 2000,
-  // 单次携带的上下文历史数量
-  historyNumber: 2
+onMounted(async () => {
+  reset(localStorage.setting)
+  watch(setting, () => {
+    localStorage.setting = JSON.stringify(setting)
+  })
+  setting.balance = (await getBalance()).total_granted
 })
 
-// watch(isBright, async (ov, nv) => {
-//   setting.theme = nv ? 'bright' : 'dark'
-// })
-
-onMounted(() => {
-  new BScroll('.setting-scroll')
-})
+function reset(settingJson) {
+  const config = JSON.parse(settingJson || `{"theme":true,"fontSize":1,"key":"","baseUrl":"https://api.openai.com","model":"gpt-3.5-turbo","balance":0,"temperature":1,"maxToken":2000,"historyNumber":2}`)
+  setting.theme = config.theme
+  setting.balance = config.balance
+  setting.fontSize = config.fontSize
+  setting.useMarkdownView = config.useMarkdownView
+  setting.key = config.key
+  setting.baseUrl = config.baseUrl
+  setting.model = config.model
+  setting.balance = config.balance
+  setting.temperature = config.temperature
+  setting.maxToken = config.maxToken
+  setting.historyNumber = config.historyNumber
+}
 </script>
 
 <style lang="scss" scoped>
 @import '@/assets/style/global.scss';
 
+// 黑夜
+.dark {
+  background-color: $backgroundColorD;
+  color: $colorMinorD;
+
+  .van-field {
+    background-color: $backgroundColorStressD;
+
+    ::v-deep * {
+      color: $colorMinorD;
+    }
+  }
+
+  .van-cell:after {
+    border: none;
+  }
+
+  ::v-deep [class*=van-hairline]::after {
+    border-color: $backgroundColorStressD;
+  }
+
+  .van-nav-bar {
+    ::v-deep * {
+      color: $colorMinor;
+    }
+
+    span {
+      color: $mainColorD;
+    }
+
+    ::v-deep .van-nav-bar__content {
+      background-color: $backgroundColorD;
+    }
+
+    .message-count {
+      color: $colorMinorD;
+      background-color: $backgroundColorD;
+    }
+  }
+
+  .setting {
+    .block {
+      background-color: $backgroundColorStressD;
+
+      .item {
+        border-bottom: 1px solid $backgroundColorD;
+
+        select {
+          background-color: #0000;
+          border: 1px solid $backgroundColorD;
+        }
+
+        .van-field {
+          border: 1px solid $backgroundColorD;
+        }
+
+        .custom-button {
+          background-color: $mainColorD;
+          color: $backgroundColorStressD;
+        }
+      }
+
+      .icon-wrapper .van-icon-underway {
+        color: rgb(255, 135, 80);
+      }
+
+      .icon-wrapper .van-icon-smile {
+        color: $mainColorD;
+      }
+    }
+  }
+}
+
+// 白天
+.bright {
+  background-color: $backgroundColor;
+
+  .setting {
+    .block {
+      background-color: $backgroundColorStress;
+
+      .item {
+        border-bottom: 1px solid $backgroundColor;
+
+        select {
+          background-color: #0000;
+          border: 1px solid $backgroundColor;
+        }
+
+        .van-field {
+          border: 1px solid $backgroundColor;
+        }
+
+        .custom-button {
+          background-color: $mainColor;
+          color: $backgroundColorStress;
+        }
+      }
+
+      .icon-wrapper .van-icon-underway {
+        color: rgb(255, 135, 80);
+      }
+
+      .icon-wrapper .van-icon-smile {
+        color: $mainColorD;
+      }
+    }
+  }
+}
+
+// 常规
 .container {
   .setting-scroll {
     height: calc(100vh - 46px);
+    overflow-y: scroll;
   }
 
   .setting {
@@ -138,16 +242,17 @@ onMounted(() => {
     .van-button {
       margin: 0 10px;
       width: calc(100% - 20px);
+      font-size: 1em;
     }
 
     .block {
       padding: 2px 5px;
-      background-color: $backgroundColorStress;
+      // background-color: $backgroundColorStress;
       margin: 10px;
       border-radius: 6px;
 
       .item {
-        border-bottom: 1px solid $backgroundColor;
+        // border-bottom: 1px solid $backgroundColor;
         line-height: 3.5em;
         padding: 0 5px;
         display: flex;
@@ -156,34 +261,37 @@ onMounted(() => {
 
         select {
           padding: 5px 10px;
-          background-color: #0000;
-          border: 1px solid $backgroundColor;
+          // background-color: #0000;
+          // border: 1px solid $backgroundColor;
           border-radius: 5px;
         }
 
         .van-button {
           width: 20%;
           margin-right: 0;
+          font-size: 1em;
         }
 
         .van-field {
-          max-width: 78%;
-          border: 1px solid $backgroundColor;
-          padding: 3px 10px;
+          max-width: 70%;
+          // border: 1px solid $backgroundColor;
+          padding: .3em 1em;
           border-radius: 5px;
+          font-size: 1em;
         }
 
         .van-slider {
           width: 50%;
           margin-right: 32px;
+          font-size: 1em;
 
           .custom-button {
             padding: 5px 10px;
-            background-color: $mainColor;
+            // background-color: $mainColor;
             height: 1em;
             line-height: 1em;
             border-radius: 10px;
-            color: $backgroundColorStress;
+            // color: $backgroundColorStress;
             white-space: nowrap;
           }
         }
@@ -196,13 +304,13 @@ onMounted(() => {
           font-size: 1em;
         }
 
-        .icon-wrapper .van-icon-underway {
-          color: rgb(255, 135, 80);
-        }
+        // .icon-wrapper .van-icon-underway {
+        //   color: rgb(255, 135, 80);
+        // }
 
-        .icon-wrapper .van-icon-smile {
-          color: $mainColor;
-        }
+        // .icon-wrapper .van-icon-smile {
+        //   color: $mainColor;
+        // }
 
         h3 {
           font-weight: bold;

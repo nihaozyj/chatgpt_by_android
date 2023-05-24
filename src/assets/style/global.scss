@@ -7,7 +7,22 @@ $colorWarning: #ff8a7d;
 
 $yyBackgroundColor: #eff7ff;
 
+// 黑夜模式
+$backgroundColorD: #282C34;
+$backgroundColorStressD: #21252B;
+
+$mainColorD: #1989FA;
+$colorMinorD: #aaa;
+$colorWarningD: #ff8a7d;
+
+$yyBackgroundColorD: #eff7ff;
+
 .v-md-editor-preview {
+  &>* {
+    max-width: calc(100vw - 40px);
+    word-wrap: break-word;
+  }
+
   p {
     margin: 5px 0;
 
