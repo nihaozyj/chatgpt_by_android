@@ -17,6 +17,10 @@ $colorWarningD: #ff8a7d;
 
 $yyBackgroundColorD: #eff7ff;
 
+div {
+  user-select: none;
+}
+
 .v-md-editor-preview {
   &>* {
     max-width: calc(100vw - 40px);

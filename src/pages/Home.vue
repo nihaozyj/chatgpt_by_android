@@ -14,8 +14,8 @@
       <div class="content">
         <van-empty v-if="historys.length == 0" description="会话记录为空" />
         <!-- 历史记录列表 -->
-        <div class="item" v-for="item in historys" :key="item.id" @click="openSession(item)"
-          v-long-press="() => deleteSession(item.id)">
+        <div class="item" v-for="item in historys" :key="item.id" v-long-press="() => deleteSession(item.id)"
+          @click="openSession(item)">
           <div>
             <h2>{{ item.role.name }}</h2>
           </div>

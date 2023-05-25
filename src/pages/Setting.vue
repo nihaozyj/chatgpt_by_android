@@ -96,6 +96,13 @@ onMounted(async () => {
   watch(setting, () => {
     localStorage.setting = JSON.stringify(setting)
   })
+
+  // 主题改变后调用方法使系统通知栏颜色改变,此处会调用 5+APP 暴露的全局方法
+  watch(() => setting.theme, () => {
+    if (window.$5PlusAPI)
+      window.$5PlusAPI.switchTheme(setting.theme)
+  })
+
   setting.balance = (await getBalance()).total_granted
 })
 

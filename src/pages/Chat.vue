@@ -95,9 +95,11 @@ onMounted(() => {
   // 初始化设置项
   if (localStorage.setting) {
     const result = JSON.parse(localStorage.setting)
+
     setting.theme = result.theme
     setting.fontSize = result.fontSize
     setting.historyNumber = result.historyNumber
+    setting.maxToken = result.maxToken
   }
 })
 
@@ -125,6 +127,8 @@ function showActionSheet(text, id) {
 
 function handleMessage(word, error, done, controller) {
   const index = history.dialog.length - 1
+  // 用户选择停止消息
+  if (!isLoad.value) return (controller.abort())
   // 请求错误，进行提示
   if (error) {
     isLoad.value = false
@@ -134,8 +138,6 @@ function handleMessage(word, error, done, controller) {
   }
   // 请求结束，关闭加载动画、禁用打断按钮
   if (done) return (isLoad.value = false)
-  // 用户选择停止消息
-  if (!isLoad.value) return (controller.abort())
   // 将接受到的当个文字放入 DOM 元素中
   history.dialog[index].text += word
   bScroll.scrollBy(0, bScroll.maxScrollY - bScroll.y)
@@ -144,26 +146,40 @@ function handleMessage(word, error, done, controller) {
 async function sendMsg() {
   // 获取要发送的消息内容
   const content = message.value.trim()
-  // 消息框未空白时，禁止发送
-  if (content == '') return
   // 当前消息未接收完毕时，禁止发送下一条信息
   if (isLoad.value) return (isLoad.value = false)
+  // 消息框未空白时，禁止发送
+  if (content == '') return
   // 清空当前编辑窗口
   message.value = ""
   // 将自身编辑的消息放置到界面中
   history.dialog.push({ date: Date.now(), role: 'user', text: content })
   // 添加一条新的空白消息，用于接收 chatgpt 的回复
   history.dialog.push({ date: Date.now() + 2000, role: 'system', text: '' })
-  bScroll.scrollBy(0, bScroll.maxScrollY - bScroll.y)
   // 显示加载动画
   isLoad.value = true
-  // 统计 TOKEN 数
   // 将预设添加到消息中
   const fullMessage = [
     { role: 'user', content: history.role.dialog },
     { role: 'user', content }
   ]
+  // 统计 TOKEN 数， 此处不会统计因此直接统计字数
+  let size = history.role.dialog.length + content.length
   // 添加历史消息记录
+  for (let i = history.dialog.length - 3, n = 0; i >= 0; i--, n++) {
+    // 上下文数量达到了设定，结束添加
+    if (n >= setting.historyNumber) break
+    // 先统计字数，然后再判断是否添加，因为token超出上限后请求会失败！
+    size += history.dialog[i].text.length
+    // 没超过最大token则继续添加上下文
+    if (size > setting.maxToken) break
+    // 将消息添加到上下文
+    fullMessage.unshift({
+      role: history.dialog[i].role,
+      content: history.dialog[i].text
+    })
+  }
+  console.log(`当前字数 ${size}`)
   // 发送请求
   await send(fullMessage, handleMessage)
 }
