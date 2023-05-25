@@ -65,7 +65,7 @@ async function createSession(pre = { name: '默认聊天机器人', dialog: '' }
   // 进入聊天界面
   if (result) {
     localStorage.history = JSON.stringify(history)
-    router.replace('/')
+    return router.replace('/')
   }
   // 出现错误
   showToast('创建失败，请手动清除应用数据后再次尝试！')

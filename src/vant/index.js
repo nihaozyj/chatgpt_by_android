@@ -1,10 +1,10 @@
 import {
-  Button, Field, Icon, NavBar, Tag, Radio, TextEllipsis, Popup,
+  Button, Field, Icon, NavBar, Tag, Radio, TextEllipsis, Popup, SwipeCell,
   ActionSheet, Divider, Empty, NoticeBar, Cell, Slider, Switch, CellGroup, Loading
 } from 'vant'
 
 const components = [
-  Button, NavBar, Field, Icon, Tag, Radio, TextEllipsis, Popup,
+  Button, NavBar, Field, Icon, Tag, Radio, TextEllipsis, Popup, SwipeCell,
   ActionSheet, Divider, Empty, NoticeBar, Cell, Slider, Switch, CellGroup, Loading
 ]
 

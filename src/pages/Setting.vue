@@ -64,15 +64,15 @@
           </div>
         </div>
         <div class="block">
-          <div class="item">
+          <div class="item" @click="router.push('/about')">
             <h3>关于 EasyGPT</h3>
             <van-icon name="arrow" />
           </div>
-          <div class="item">
+          <div class="item" @click="router.push('/help')">
             <h3>帮助文档</h3>
             <van-icon name="arrow" />
           </div>
-          <div class="item">
+          <div class="item" @click="router.push('/give-reward')">
             <h3>打赏</h3>
             <van-icon name="arrow" />
           </div>
@@ -87,6 +87,7 @@
 import { reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { getBalance } from '@/api'
+import { showConfirmDialog } from 'vant'
 
 const router = useRouter()
 const setting = reactive({})
@@ -95,6 +96,16 @@ onMounted(async () => {
   reset(localStorage.setting)
   watch(setting, () => {
     localStorage.setting = JSON.stringify(setting)
+  })
+
+  // 如果用户选择了gpt4则进行提示
+  watch(() => setting.model, nv => {
+    if (nv != 'gpt-4') return
+    showConfirmDialog({ message: 'GPT4 的价格约为 GPT3.5 的 30 倍以上，你确定要使用吗 ?' })
+      .then(() => { })
+      .catch(() => {
+        setting.model = 'gpt-3.5-turbo'
+      })
   })
 
   // 主题改变后调用方法使系统通知栏颜色改变,此处会调用 5+APP 暴露的全局方法
