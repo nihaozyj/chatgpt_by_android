@@ -78,6 +78,7 @@ watch(history, async () => {
 
 onUpdated(() => {
   init()
+  if (!bScroll) bScroll = new BScroll('.message-scroll', {})
   bScroll.refresh()
 })
 
