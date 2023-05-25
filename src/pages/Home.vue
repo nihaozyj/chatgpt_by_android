@@ -12,7 +12,6 @@
     <!-- 会话记录滚动区 -->
     <div class="history-scroll">
       <div class="content">
-        <van-empty v-if="historys.length == 0" description="会话记录为空" />
         <!-- 历史记录列表 -->
         <div class="item" v-for="item in historys" :key="item.id" v-long-press="() => deleteSession(item.id)"
           @click="openSession(item)">
@@ -24,6 +23,7 @@
             <span>{{ getFormatDate(item.dialog) }}</span>
           </div>
         </div>
+        <van-empty v-show="historys.length == 0" description="会话记录为空" />
         <!-- 占位 50 px -->
         <div class="end"></div>
       </div>
@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive } from 'vue'
+import { onMounted, onUpdated, reactive } from 'vue'
 import { formatDate, onLongPress } from '@/utils'
 import { useRouter } from 'vue-router'
 import { httpHistorys, httpDeleteSession } from '@/api'
@@ -57,7 +57,15 @@ const setting = reactive({})
 //   },
 // ]
 
+onUpdated(async () => {
+  await init()
+})
+
 onMounted(async () => {
+  await init()
+})
+
+async function init() {
   localStorage.removeItem('history')
   // 初始化设置项
   if (localStorage.setting) {
@@ -67,8 +75,12 @@ onMounted(async () => {
   }
   const result = await httpHistorys()
   if (!result) return showToast('获取历史数据失败！')
-  result.forEach(item => historys.push(item))
-})
+  result.forEach(item => {
+    if (historys.findIndex(h => h.id == item.id) == -1) {
+      historys.push(item)
+    }
+  })
+}
 
 function deleteSession(id) {
   showConfirmDialog({ message: '你确定要删除该记录吗 ?' })
@@ -246,9 +258,9 @@ function openSession(item) {
             }
           }
 
-          &:nth-child(2) {
-            // color: $colorMinor;
-          }
+          // &:nth-child(2) {
+          // color: $colorMinor;
+          // }
         }
       }
     }

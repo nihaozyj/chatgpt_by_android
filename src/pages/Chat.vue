@@ -77,14 +77,20 @@ watch(history, async () => {
 })
 
 onUpdated(() => {
+  init()
   bScroll.refresh()
 })
 
 onMounted(() => {
+  init()
+})
+
+function init() {
   // 判断有无历史记录
   if (!localStorage.history) return router.replace('/home')
   // 加载已有的历史记录
   const result = JSON.parse(localStorage.history)
+  if (history.id == result.id) return
   history.id = result.id
   history.role = result.role
   history.dialog = result.dialog
@@ -101,7 +107,7 @@ onMounted(() => {
     setting.historyNumber = result.historyNumber
     setting.maxToken = result.maxToken
   }
-})
+}
 
 async function onSelect(item) {
   if (item.name == asData.actions[0].name) {
@@ -154,6 +160,8 @@ async function sendMsg() {
   message.value = ""
   // 将自身编辑的消息放置到界面中
   history.dialog.push({ date: Date.now(), role: 'user', text: content })
+  // 滚动到底部用来展示最新发送的消息
+  bScroll.scrollBy(0, bScroll.maxScrollY - bScroll.y)
   // 添加一条新的空白消息，用于接收 chatgpt 的回复
   history.dialog.push({ date: Date.now() + 2000, role: 'system', text: '' })
   // 显示加载动画
@@ -181,7 +189,7 @@ async function sendMsg() {
   }
   console.log(`当前字数 ${size}`)
   // 发送请求
-  await send(fullMessage, handleMessage)
+  send(fullMessage, handleMessage)
 }
 </script>
 

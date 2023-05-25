@@ -25,7 +25,6 @@ export function getBalance() {
 
 export async function send(messages, handleMessage) {
   const { baseUrl, key, model, temperature, maxToken } = JSON.parse(localStorage.setting)
-
   const controller = new AbortController()
   // 请求方式
   const method = 'POST'
@@ -55,7 +54,7 @@ export async function send(messages, handleMessage) {
       }
     },
     onerror(err) {
-      handleMessage(null, err, false, controller)
+      handleMessage(null, err, true, controller)
     }
   })
 }

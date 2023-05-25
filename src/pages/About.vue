@@ -18,6 +18,9 @@ const router = useRouter()
 const markdown = `
 * 开源仓库 (  [Github](https://https://github.com/nihaozyj/easygpt) / [Gitee](https://gitee.com/easecat_gitee/easygpt) )
 * 哔哩哔哩 ( [暴走の毛毛虫](https://space.bilibili.com/39942486) )
+
+* **本项目中关于预设部分，完全照搬 chatgpt next web 和 网上公开设定**
+* [ChatGPT-Next-Web](https://github.com/Yidadaa/ChatGPT-Next-Web)
 `
 
 onMounted(() => {

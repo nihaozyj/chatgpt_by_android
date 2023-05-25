@@ -139,6 +139,12 @@ function savePre() {
     background-color: $backgroundColorD;
   }
 
+  .item {
+    * {
+      color: $colorMinorD;
+    }
+  }
+
   .van-popup {
     * {
       background: $backgroundColorD !important;
