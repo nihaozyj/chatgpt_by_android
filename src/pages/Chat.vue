@@ -80,6 +80,9 @@ onUpdated(() => {
   init()
   if (!bScroll) bScroll = new BScroll('.message-scroll', {})
   bScroll.refresh()
+
+  const theme = JSON.parse(localStorage.setting).theme
+  if (theme != setting.theme) setting.theme = theme
 })
 
 onMounted(() => {

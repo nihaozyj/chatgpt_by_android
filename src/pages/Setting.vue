@@ -56,7 +56,7 @@
           </div>
           <div class="item">
             <h3>携带历史消息数</h3>
-            <van-slider v-model="setting.historyNumber" max="10" min="0" step="1">
+            <van-slider v-model="setting.historyNumber" max="100" min="0" step="1">
               <template #button>
                 <div class="custom-button">{{ setting.historyNumber }}</div>
               </template>

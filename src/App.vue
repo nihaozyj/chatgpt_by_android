@@ -7,6 +7,7 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import defaultPre from '@/pre.config'
 
 if (!localStorage.preList) {
@@ -16,6 +17,13 @@ if (!localStorage.preList) {
 if (!localStorage.setting) {
   localStorage.setting = '{"fontSize":1,"maxToken":2000,"theme":true,"balance":0,"key":"","baseUrl":"https://api.openai.com","model":"gpt-3.5-turbo","temperature":1,"historyNumber":2}'
 }
+
+onMounted(() => {
+  const theme = JSON.parse(localStorage.setting).theme
+  if (theme && window.$5PlusAPI) {
+    window.$5PlusAPI.switchTheme(setting.theme)
+  }
+})
 </script>
 
 <style lang="scss">
