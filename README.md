@@ -1,4 +1,7 @@
 **项目介绍** <br/>
+
+ **安卓端软件下载地址在此处 [GPT安卓版](https://gitee.com/easecat_gitee/easygpt/releases/tag/easygpt_v1.3)，其他端的用户如需使用请自行下载hbuiderx打包** 
+
 ![界面](/public/icon/info.png) <br/>
 
 项目使用 `vue3` 搭建，运行项目时请保证你的电脑已经安装了 vue 相关环境 <b/>
