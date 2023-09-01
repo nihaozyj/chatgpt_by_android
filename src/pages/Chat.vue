@@ -195,6 +195,8 @@ async function sendMsg() {
       content: history.dialog[i].text
     })
   }
+  fullMessage.pop()
+
   // 发送请求
   send(fullMessage, handleMessage)
 }
