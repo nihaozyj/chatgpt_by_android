@@ -24,7 +24,7 @@
         <van-divider v-if="history.role.dialog != ''" style="color: #1989fa;border-color: #1989fa">上方为预设消息</van-divider>
         <!-- 用户和机器人的对话 -->
         <div class="item" :class="msg.role" v-for="(msg, index) in history.dialog" :key="msg.date"
-          v-long-press="() => showActionSheet(msg.text, msg.date)">
+             v-long-press="() => showActionSheet(msg.text, msg.date)">
           <v-md-preview :text="msg.text" />
           <van-loading v-if="isLoad && index == history.dialog.length - 1" type="spinner" size="16px" />
         </div>
@@ -35,19 +35,19 @@
       <div class="form">
         <van-field v-model="message" rows="1" autosize type="textarea" placeholder="输入内容" />
         <van-button :icon="isLoad ? 'stop-circle' : 'icon/send.png'" :type="isLoad ? 'warning' : 'primary'"
-          class="btn-send" @click="sendMsg">{{ isLoad ? '停止' : '发送' }}</van-button>
+                    class="btn-send" @click="sendMsg">{{ isLoad ? '停止' : '发送' }}</van-button>
       </div>
     </div>
   </div>
   <!-- 动作面板 -->
   <van-action-sheet :disabled="isLoad" @select="onSelect" v-model:show="asData.isShow" :actions="asData.actions"
-    close-on-click-action />
+                    close-on-click-action />
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, watch, onUpdated } from 'vue'
 import { useRouter } from 'vue-router'
-import { onLongPress } from '@/utils'
+import { onLongPress, bool } from '@/utils'
 import { showToast } from 'vant'
 import { send, httpUpdateSession } from '@/api'
 
@@ -142,7 +142,9 @@ function handleMessage(word, error, done, controller) {
   // 请求错误，进行提示
   if (error) {
     isLoad.value = false
-    history.dialog[index].text = "错误，请检查你的秘钥和网络！"
+
+    history.dialog[index].text += '错误，请检查你的秘钥和网络！'
+
     bScroll.scrollBy(0, bScroll.maxScrollY - bScroll.y)
     return
   }
@@ -171,14 +173,16 @@ async function sendMsg() {
   // 显示加载动画
   isLoad.value = true
   // 将预设添加到消息中
-  const fullMessage = [
-    { role: 'user', content: history.role.dialog },
-    { role: 'user', content }
-  ]
+  const fullMessage = [{ role: 'user', content }]
+  // 存在预设则添加预设
+  if (bool(history.role.dialog)) fullMessage.unshift({
+    role: 'user',
+    content: `\n以上是我们的历史对话记录，下面是我对你的要求，你必须严格遵守：${history.role.dialog}`
+  },)
   // 统计 TOKEN 数， 此处不会统计因此直接统计字数
   let size = history.role.dialog.length + content.length
   // 添加历史消息记录
-  for (let i = history.dialog.length - 3, n = 0; i >= 0; i--, n++) {
+  for (let i = history.dialog.length - 2, n = 0; i >= 0; i--, n++) {
     // 上下文数量达到了设定，结束添加
     if (n >= setting.historyNumber) break
     // 先统计字数，然后再判断是否添加，因为token超出上限后请求会失败！
@@ -191,7 +195,6 @@ async function sendMsg() {
       content: history.dialog[i].text
     })
   }
-  console.log(`当前字数 ${size}`)
   // 发送请求
   send(fullMessage, handleMessage)
 }

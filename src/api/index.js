@@ -1,11 +1,14 @@
 import { fetchEventSource } from "@microsoft/fetch-event-source"
 import { showToast } from 'vant'
+import { bool } from '../utils'
 
 // 余额查询
 export function getBalance() {
-  const { baseUrl, key } = JSON.parse(localStorage.setting)
-
+  const { baseUrl: _baseUrl, key } = JSON.parse(localStorage.setting)
   const xhr = new XMLHttpRequest()
+
+  // 有值则使用用户的配置，否则访问官方的接口地址
+  const baseUrl = bool(_baseUrl) ? _baseUrl : 'https://api.openai.com'
 
   xhr.open('GET', `${baseUrl}/dashboard/billing/credit_grants`, true)
 
@@ -24,7 +27,7 @@ export function getBalance() {
 }
 
 export async function send(messages, handleMessage) {
-  const { baseUrl, key, model, temperature, maxToken } = JSON.parse(localStorage.setting)
+  const { baseUrl, key, model, temperature } = JSON.parse(localStorage.setting)
   const controller = new AbortController()
   // 请求方式
   const method = 'POST'
@@ -32,24 +35,21 @@ export async function send(messages, handleMessage) {
   const headers = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${key}`,
-    'x-api2d-no-cache': 1
+    'x-api2d-no-cache': 1,
+    'Connection': 'close'
   }
   // 请求体
-  const body = JSON.stringify({ model, messages, stream: true, temperature, max_tokens: maxToken })
+  const body = JSON.stringify({ model, messages, stream: true, temperature })
 
   await fetchEventSource(`${baseUrl}/v1/chat/completions`, {
     headers, method, body, signal: controller.signal,
     // 处理收到的消息
     onmessage(event) {
       try {
-        // 此处必须放在 try 块中，如果捕获到异常则说明字符串中出现 '[DONE]'，这标准这传输完成
-        // 如果代码没有放在 try catch 块中，则会因为异常没有被捕获，而重新发起请求，
-        // 至于为什么会这样，我没看明白
         const content = JSON.parse(event.data).choices[0].delta.content || ''
         // 判断消息是否存在，存在则添加到消息框中, 第一次获取的肯定是 undefined, 直接返回空串
         handleMessage(content, null, false, controller)
       } catch {
-        // 出现报错，说明连接关闭
         handleMessage(null, null, true, controller)
       }
     },

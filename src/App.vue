@@ -15,7 +15,7 @@ if (!localStorage.preList) {
 }
 
 if (!localStorage.setting) {
-  localStorage.setting = '{"fontSize":1,"maxToken":2000,"theme":true,"balance":0,"key":"","baseUrl":"https://api.openai.com","model":"gpt-3.5-turbo","temperature":1,"historyNumber":2}'
+  localStorage.setting = '{"fontSize":1,"maxToken":2000,"theme":true,"balance":0,"key":"","baseUrl":"","model":"gpt-3.5-turbo","temperature":1,"historyNumber":2}'
 }
 
 onMounted(() => {

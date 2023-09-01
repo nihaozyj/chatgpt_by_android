@@ -59,3 +59,10 @@ export function formatDate(timestamp = Date.now(), format = "YYYY/MM/DD hh:mm:ss
   format = format.replace("ss", second)
   return format
 }
+
+// 获取变量的布尔值表达
+export function bool(value) {
+  if (typeof (value) === 'undefined' || value === 0 || value === '' || value == null)
+    return false
+  return true
+}

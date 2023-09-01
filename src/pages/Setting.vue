@@ -118,7 +118,7 @@ onMounted(async () => {
 })
 
 function reset(settingJson) {
-  const config = JSON.parse(settingJson || `{"theme":true,"fontSize":1,"key":"","baseUrl":"https://api.openai.com","model":"gpt-3.5-turbo","balance":0,"temperature":1,"maxToken":2000,"historyNumber":2}`)
+  const config = JSON.parse(settingJson || `{"theme":true,"fontSize":1,"key":"","baseUrl":"","model":"gpt-3.5-turbo","balance":0,"temperature":1,"maxToken":2000,"historyNumber":2}`)
   setting.theme = config.theme
   setting.balance = config.balance
   setting.fontSize = config.fontSize
