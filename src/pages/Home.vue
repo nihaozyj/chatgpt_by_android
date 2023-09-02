@@ -13,8 +13,8 @@
     <div class="history-scroll">
       <div class="content">
         <!-- 历史记录列表 -->
-        <div class="item" v-for="item in historys" :key="item.id" v-long-press="() => deleteSession(item.id)"
-          @click="openSession(item)">
+        <div class="item" v-for="item in historys" :key="item.id" v-long-press.stop-circle="() => deleteSession(item.id)"
+             @click="openSession(item)">
           <div>
             <h2>{{ item.role.name }}</h2>
           </div>
@@ -48,15 +48,6 @@ const historys = reactive([])
 
 const setting = reactive({})
 
-// historys 数据格式
-// [
-//   {
-//     id: 28,
-//     role: { name: '文档机器人', dialog: '' },
-//     dialog: [{ date: 1684808101175, role: 'user', text: '# 你好!' }]
-//   },
-// ]
-
 onUpdated(async () => {
   await init()
 })
@@ -89,7 +80,7 @@ function deleteSession(id) {
       const result = await httpDeleteSession(id)
       if (result) {
         historys.splice(index, 1)
-        showToast('删除失败!')
+        showToast('删除成功!')
       }
       else {
         showToast('删除失败!')

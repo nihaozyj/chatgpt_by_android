@@ -47,7 +47,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch, onUpdated } from 'vue'
 import { useRouter } from 'vue-router'
-import { onLongPress, bool } from '@/utils'
+import { onLongPress, bool, copyToClipboard } from '@/utils'
 import { showToast } from 'vant'
 import { send, httpUpdateSession } from '@/api'
 
@@ -114,22 +114,25 @@ function init() {
 }
 
 async function onSelect(item) {
+  console.log({
+    item
+  })
   if (item.name == asData.actions[0].name) {
-    const clipboard = navigator.clipboard
+    const clipboard = copyToClipboard(asData.text)
     // 判断用户浏览器是否支持操作剪贴板
-    if (clipboard == undefined) return showToast('复制失败，你的浏览器不支持改功能！')
-    // 将文本写入剪贴板
-    await clipboard.writeText(asData.text)
-    showToast('消息文本已复制到剪贴板！')
+    if (!clipboard) return showToast('复制失败，你的浏览器不支持此功能！')
+
+    showToast('复制成功!')
   }
-  else if (item.name == asData.actions[1].name && !isLoad.value) {
+
+  if (item.name == asData.actions[1].name && !isLoad.value) {
     const index = history.dialog.findIndex(item => item.date == asData.id)
     history.dialog.splice(index, 1)
     showToast('删除成功！')
   }
 }
 
-function showActionSheet(text, id) {
+function showActionSheet(text, id, event) {
   asData.isShow = true
   asData.text = text
   asData.id = id
@@ -169,16 +172,11 @@ async function sendMsg() {
   // 滚动到底部用来展示最新发送的消息
   bScroll.scrollBy(0, bScroll.maxScrollY - bScroll.y)
   // 添加一条新的空白消息，用于接收 chatgpt 的回复
-  history.dialog.push({ date: Date.now() + 2000, role: 'system', text: '' })
+  history.dialog.push({ date: Date.now() + 2000, role: 'assistant', text: '' })
   // 显示加载动画
   isLoad.value = true
   // 将预设添加到消息中
   const fullMessage = [{ role: 'user', content }]
-  // 存在预设则添加预设
-  if (bool(history.role.dialog)) fullMessage.unshift({
-    role: 'user',
-    content: `\n以上是我们的历史对话记录，下面是我对你的要求，你必须严格遵守：${history.role.dialog}`
-  },)
   // 统计 TOKEN 数， 此处不会统计因此直接统计字数
   let size = history.role.dialog.length + content.length
   // 添加历史消息记录
@@ -196,7 +194,11 @@ async function sendMsg() {
     })
   }
   fullMessage.pop()
-
+  // 存在预设则添加预设
+  if (bool(history.role.dialog)) fullMessage.unshift({
+    role: 'system',
+    content: history.role.dialog
+  })
   // 发送请求
   send(fullMessage, handleMessage)
 }
@@ -253,7 +255,8 @@ async function sendMsg() {
       }
     }
 
-    .system {
+    .system,
+    .assistant {
       background-color: $backgroundColorStressD;
 
       &::before {
@@ -310,7 +313,8 @@ async function sendMsg() {
       }
     }
 
-    .system {
+    .system,
+    .assistant {
       background-color: $backgroundColorStress;
 
       &::before {
@@ -416,7 +420,8 @@ async function sendMsg() {
       }
     }
 
-    .system {
+    .system,
+    .assistant {
       // background-color: $backgroundColorStress;
       justify-self: self-start;
 

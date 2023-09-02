@@ -31,7 +31,13 @@
             <h3>模型</h3>
             <select v-model="setting.model">
               <option>gpt-3.5-turbo</option>
+              <option>gpt-3.5-turbo-0301</option>
+              <option>gpt-3.5-turbo-0613</option>
+              <option>gpt-3.5-turbo-16k</option>
+              <option>gpt-3.5-turbo-16k-0613</option>
               <option>gpt-4</option>
+              <option>gpt-4-0314</option>
+              <option>gpt-4-0613</option>
             </select>
           </div>
           <div class="item">
@@ -47,8 +53,8 @@
             </van-slider>
           </div>
           <div class="item">
-            <h3>Token限制</h3>
-            <van-slider v-model="setting.maxToken" max="4000" min="100" step="100">
+            <h3>消息字数限制</h3>
+            <van-slider v-model="setting.maxToken" max="16000" min="100" step="100">
               <template #button>
                 <div class="custom-button">{{ setting.maxToken }}</div>
               </template>
@@ -56,7 +62,7 @@
           </div>
           <div class="item">
             <h3>携带历史消息数</h3>
-            <van-slider v-model="setting.historyNumber" max="100" min="0" step="1">
+            <van-slider v-model="setting.historyNumber" max="256" min="0" step="1">
               <template #button>
                 <div class="custom-button">{{ setting.historyNumber }}</div>
               </template>

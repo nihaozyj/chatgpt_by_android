@@ -1,4 +1,4 @@
-<!doctype html><html lang=""><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="favicon.ico"><title>easygpt</title><script defer="defer" src="js/chunk-vendors.5e9e70a2.js"></script><script defer="defer" src="js/app.65fe3746.js"></script><link href="css/chunk-vendors.650ca82a.css" rel="stylesheet"><link href="css/app.dcecaa92.css" rel="stylesheet"></head><body><noscript><strong>We're sorry but easygpt doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id="app"></div><script>document.addEventListener('plusready', () => {
+<!doctype html><html lang=""><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="favicon.ico"><title>easygpt</title><script defer="defer" src="js/chunk-vendors.5e9e70a2.js"></script><script defer="defer" src="js/app.799fe05c.js"></script><link href="css/chunk-vendors.650ca82a.css" rel="stylesheet"><link href="css/app.cb48e9e6.css" rel="stylesheet"></head><body><noscript><strong>We're sorry but easygpt doesn't work properly without JavaScript enabled. Please enable it to continue.</strong></noscript><div id="app"></div><script>document.addEventListener('plusready', () => {
       //等待plus ready后再调用5+ API：
       let first = null
       const webview = plus.webview.currentWebview()
@@ -6,14 +6,16 @@
       window.$5PlusAPI = {
         switchTheme(theme) {
           if (theme) {
-            plus.navigator.setStatusBarStyle('light')
+            plus.navigator.setStatusBarStyle('dark')
             plus.navigator.setStatusBarBackground('#ffffff')
           } else {
-            plus.navigator.setStatusBarStyle('dark')
+            plus.navigator.setStatusBarStyle('light')
             plus.navigator.setStatusBarBackground('#282C34')
           }
         }
       }
+
+      window.$5PlusAPI.switchTheme(JSON.parse(localStorage.setting).theme)
 
       plus.key.addEventListener('backbutton', () => {
         webview.canBack((e) => {

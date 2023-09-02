@@ -27,14 +27,16 @@
       window.$5PlusAPI = {
         switchTheme(theme) {
           if (theme) {
-            plus.navigator.setStatusBarStyle('light')
+            plus.navigator.setStatusBarStyle('dark')
             plus.navigator.setStatusBarBackground('#ffffff')
           } else {
-            plus.navigator.setStatusBarStyle('dark')
+            plus.navigator.setStatusBarStyle('light')
             plus.navigator.setStatusBarBackground('#282C34')
           }
         }
       }
+
+      window.$5PlusAPI.switchTheme(JSON.parse(localStorage.setting).theme)
 
       plus.key.addEventListener('backbutton', () => {
         webview.canBack((e) => {
