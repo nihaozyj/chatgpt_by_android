@@ -1,6 +1,6 @@
 **项目介绍** <br/>
 
- **安卓端软件下载地址在此处 [GPT安卓版](https://gitee.com/easecat_gitee/easygpt/releases/tag/easygpt_v1.3)，其他端的用户如需使用请自行下载hbuiderx打包** 
+ **安卓端软件下载地址在此处 [GPT安卓版](https://gitee.com/easecat_gitee/easygpt/releases/tag/GPT%E5%AE%89%E5%8D%93%E7%89%88_V0.1.0)，其他端的用户如需使用请自行下载hbuiderx打包** 
 
 ![界面](/public/icon/info.png) <br/>
 
