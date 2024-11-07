@@ -86,13 +86,34 @@
   $: if (topP) {
     localStorage.top_p = topP;
   }
+
+  function returnToThePreviousPage() {
+    const cg = getConfig();
+    let prompt, baseUrl, apiKey;
+    if (cg.prompt !== config.prompt) {
+      prompt = cg.prompt;
+    }
+    if (cg.baseUrl !== config.baseUrl) {
+      baseUrl = cg.baseUrl;
+    }
+    if (cg.apiKey !== config.apiKey) {
+      apiKey = cg.apiKey;
+    }
+
+    if (prompt || baseUrl || apiKey) {
+      const lt = (localStorage.list && JSON.parse(localStorage.list)) || [];
+      lt.unshift({ prompt, baseUrl, apiKey });
+      localStorage.list = JSON.stringify(lt);
+    }
+    push('/');
+  }
 </script>
 
 <main>
   <header>
-    <button class="iconfont" on:click={() => push('/')}>&#xe601;</button>
+    <button class="iconfont" on:click={returnToThePreviousPage}>&#xe601;</button>
     <h1>设置</h1>
-    <div class="right" style="width: 2.25rem"></div>
+    <button class="iconfont" style="line-height: .8rem; font-size: .8rem;" on:click={() => push('/historicalChanges')}>历史更改</button>
   </header>
   <div class="setting-container">
     <!-- 主题设置 -->

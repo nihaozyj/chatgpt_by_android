@@ -7,7 +7,7 @@
     user: 'user',
     /** 助手 */
     assistant: 'assistant',
-  } as const;
+  }
 </script>
 
 <script lang="ts">

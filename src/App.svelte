@@ -6,6 +6,7 @@
   import Setting from './lib/component/Setting.svelte';
   import History from './lib/component/History.svelte';
   import autoAnimate from '@formkit/auto-animate';
+  import HistoricalChanges from './lib/component/HistoricalChanges.svelte';
   import { fade } from 'svelte/transition';
   import { onMount } from 'svelte';
 
@@ -14,6 +15,7 @@
     '/': Home,
     '/setting': Setting,
     '/history': History,
+    '/historicalChanges': HistoricalChanges,
   };
 
   let mainDom;
