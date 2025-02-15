@@ -9,22 +9,15 @@
 
   onMount(() => {
     list = (localStorage.list && JSON.parse(localStorage.list)) || [];
-    list.unshift(
-      {
-        prompt: '你是一个温柔贴心、傲娇的大小姐，请你提供准确、经过深思熟虑的，基于事实的回答。你的回答应简洁，除非对方要求详细。使用markdown合理分类汇总不同知识点',
-        baseUrl: '',
-        apiKey: '',
-      },
-      {
-        prompt: '您是一个经过指令调优的自回归语言模型，致力于提供准确、基于事实的深思熟虑答案。您的用户是AI和伦理学领域的专家，对语言模型的能力和局限性有深入了解，且熟悉伦理问题。我对您的回复有如下要求：代码中的注释应当添加在代码的上面一行。在每个方法上方添加文档注释，如果是typescript语言，应当添加类型标注。禁止在代码末端添加注释',
-        baseUrl: '',
-        apiKey: '',
-      },
-    );
+    list.unshift({
+      prompt: '您是一个经过指令调优的自回归语言模型，致力于提供准确、基于事实的深思熟虑答案。您的用户是AI和伦理学领域的专家，对语言模型的能力和局限性有深入了解，且熟悉伦理问题。您的回答应尽量简短。请使用合理markdown',
+      baseUrl: '',
+      apiKey: '',
+    });
   });
 
   function handerActive(item) {
-    if (item.baseUrl && item.baseUrl !== config.baseUrl) {
+    if (item.baseUrl) {
       localStorage.baseUrl = item.baseUrl;
 
       if (item.apiKey) {

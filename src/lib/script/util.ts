@@ -1,5 +1,5 @@
-import Conversation from "./conversation";
-import db from "./db";
+import Conversation from "./conversation"
+import db from "./db"
 
 /**
  * 创建对话
@@ -7,16 +7,16 @@ import db from "./db";
  * @returns 新创建的对话
  */
 export function createConversation(title: string = '新对话') {
-  const conversation = new Conversation();
-  conversation.title = title;
+  const conversation = new Conversation()
+  conversation.title = title
 
   try {
-    db.upsertConversation(conversation);
+    db.upsertConversation(conversation)
   } catch (error) {
-    console.error(error);
+    console.error(error)
   }
 
-  return conversation;
+  return conversation
 }
 
 
@@ -29,57 +29,57 @@ export function createConversation(title: string = '新对话') {
  */
 export async function compressImage(file: File, maxWidth: number = 1280, maxHeight: number = 720): Promise<File> {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    const reader = new FileReader();
+    const img = new Image()
+    const reader = new FileReader()
 
     reader.onload = (event) => {
-      img.src = event.target!.result as string;
-    };
+      img.src = event.target!.result as string
+    }
 
     img.onload = () => {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
+      const canvas = document.createElement("canvas")
+      const ctx = canvas.getContext("2d")
       // 计算压缩后的宽高
-      let width = img.width;
-      let height = img.height;
+      let width = img.width
+      let height = img.height
 
       if (width > height) {
         if (width > maxWidth) {
-          height *= maxWidth / width;
-          width = maxWidth;
+          height *= maxWidth / width
+          width = maxWidth
         }
       } else {
         if (height > maxHeight) {
-          width *= maxHeight / height;
-          height = maxHeight;
+          width *= maxHeight / height
+          height = maxHeight
         }
       }
-      canvas.width = width;
-      canvas.height = height;
+      canvas.width = width
+      canvas.height = height
       // 绘制图像到 canvas
-      ctx!.drawImage(img, 0, 0, width, height);
+      ctx!.drawImage(img, 0, 0, width, height)
       // 将 canvas 转换为 Blob
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            resolve(new File([blob], file.name, { type: file.type })); // 返回压缩后的文件
+            resolve(new File([blob], file.name, { type: file.type })) // 返回压缩后的文件
           } else {
-            reject(new Error("压缩失败"));
+            reject(new Error("压缩失败"))
           }
         },
         file.type,
         0.7,
-      ); // 0.7 是压缩质量，范围 0-1
-    };
+      ) // 0.7 是压缩质量，范围 0-1
+    }
 
     img.onerror = (error) => {
-      reject(error);
-    };
+      reject(error)
+    }
     reader.onerror = (error) => {
-      reject(error);
-    };
-    reader.readAsDataURL(file); // 读取文件为 Data URL
-  });
+      reject(error)
+    }
+    reader.readAsDataURL(file) // 读取文件为 Data URL
+  })
 }
 
 /**
@@ -89,11 +89,11 @@ export async function compressImage(file: File, maxWidth: number = 1280, maxHeig
  */
 export function convertToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file); // 将文件读取为 Data URL
-  });
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file) // 将文件读取为 Data URL
+  })
 }
 
 /**
@@ -110,66 +110,66 @@ export function addLongPressListener(
   callback: (target: HTMLElement) => void,
   duration: number = 400
 ) {
-  let timeout: number;
-  let startX: number = 0;
-  let startY: number = 0;
-  const moveThreshold = 10; // 滑动的最大容忍距离，单位为像素
+  let timeout: number
+  let startX: number = 0
+  let startY: number = 0
+  const moveThreshold = 10 // 滑动的最大容忍距离，单位为像素
 
-  let startElement: HTMLElement;
-  let whetherToTriggerALongPressEvent = false;
+  let startElement: HTMLElement
+  let whetherToTriggerALongPressEvent = false
 
   const handleTouchStart = (event: TouchEvent) => {
-    const touch = event.touches[0];
-    startX = touch.clientX;
-    startY = touch.clientY;
-    const target = event.target as HTMLElement;
-    startElement = target;
+    const touch = event.touches[0]
+    startX = touch.clientX
+    startY = touch.clientY
+    const target = event.target as HTMLElement
+    startElement = target
     timeout = window.setTimeout(() => {
-      callback(target);
-      whetherToTriggerALongPressEvent = true;
-      event.preventDefault();
-    }, duration);
-  };
+      callback(target)
+      whetherToTriggerALongPressEvent = true
+      event.preventDefault()
+    }, duration)
+  }
 
   const handleTouchEnd = () => {
-    clearTimeout(timeout);
-  };
+    clearTimeout(timeout)
+  }
 
   const handleTouchMove = (event: TouchEvent) => {
-    const touch = event.touches[0];
-    const deltaX = Math.abs(touch.clientX - startX);
-    const deltaY = Math.abs(touch.clientY - startY);
+    const touch = event.touches[0]
+    const deltaX = Math.abs(touch.clientX - startX)
+    const deltaY = Math.abs(touch.clientY - startY)
     if (deltaX > moveThreshold || deltaY > moveThreshold) {
-      clearTimeout(timeout);
+      clearTimeout(timeout)
     }
-  };
+  }
 
   element.addEventListener('touchstart', (event) => {
-    const target = event.target as HTMLElement;
+    const target = event.target as HTMLElement
     if (target.matches(childSelector)) {
-      handleTouchStart(event as TouchEvent);
+      handleTouchStart(event as TouchEvent)
     }
-  });
+  })
 
   element.addEventListener('touchend', (event) => {
-    const target = event.target as HTMLElement;
+    const target = event.target as HTMLElement
     if (target.matches(childSelector)) {
       if (startElement === target && whetherToTriggerALongPressEvent) {
-        event.preventDefault();
-        whetherToTriggerALongPressEvent = false;
+        event.preventDefault()
+        whetherToTriggerALongPressEvent = false
       }
-      handleTouchEnd();
+      handleTouchEnd()
     }
-  });
+  })
 
   element.addEventListener('touchmove', (event) => {
-    const target = event.target as HTMLElement;
+    const target = event.target as HTMLElement
     if (target.matches(childSelector)) {
-      handleTouchMove(event as TouchEvent);
+      handleTouchMove(event as TouchEvent)
     }
-  });
+  })
 
-  element.addEventListener('touchcancel', handleTouchEnd);
+  element.addEventListener('touchcancel', handleTouchEnd)
 }
 
 /**
@@ -179,28 +179,54 @@ export function addLongPressListener(
  * @returns {Promise<boolean>} 用户是否确认
  */
 export async function openAlertDialog(title: string, content: string): Promise<boolean> {
-  const id = `alert-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-  const template = `<div class="pop" id="${id}"> <div class="pop-content" id="pop-content"> <h2>${title}</h2> <p>${content}</p> <button id="confirm-btn">确定</button> </div> </div>`;
+  const id = `alert-${Date.now()}-${Math.floor(Math.random() * 10000)}`
+  const template = `<div class="pop" id="${id}"> <div class="pop-content" id="pop-content"> <h2>${title}</h2> <p>${content}</p> <button id="confirm-btn">确定</button> </div> </div>`
 
-  document.body.insertAdjacentHTML('beforeend', template);
+  document.body.insertAdjacentHTML('beforeend', template)
 
   return await new Promise<boolean>(resolve => {
-    const pop = document.querySelector(`#${id}`) as HTMLElement;
-    const popContent = pop.querySelector('.pop-content') as HTMLElement;
-    const confirmBtn = pop.querySelector('#confirm-btn') as HTMLButtonElement;
+    const pop = document.querySelector(`#${id}`) as HTMLElement
+    const popContent = pop.querySelector('.pop-content') as HTMLElement
+    const confirmBtn = pop.querySelector('#confirm-btn') as HTMLButtonElement
 
     const close = () => {
-      pop.remove();
-      resolve(true);
-    };
+      pop.remove()
+      resolve(true)
+    }
 
     // 处理.pop的点击事件
-    pop.addEventListener('click', close);
+    pop.addEventListener('click', close)
     // 阻止.pop-content的点击事件冒泡
     popContent.addEventListener('click', (event) => {
-      event.stopPropagation();
-    });
+      event.stopPropagation()
+    })
     // 处理确定按钮点击事件
-    confirmBtn.addEventListener('click', close);
-  });
+    confirmBtn.addEventListener('click', close)
+  })
+}
+
+
+/**
+ * 对数组进行去重，基于对象的 prompt、baseUrl 和 apiKey 属性
+ * @param items 需要去重的对象数组
+ * @returns 去重后的对象数组
+ */
+export function deduplicateObjectsByKeys(
+  items: Array<{ prompt: string; baseUrl: string; apiKey: string }>
+): Array<{ prompt: string; baseUrl: string; apiKey: string }> {
+  /** 使用 Map 存储唯一的键值对，确保去重 */
+  const seen = new Map<string, { prompt: string; baseUrl: string; apiKey: string }>()
+
+  for (const item of items) {
+    // 拼接出唯一的标识：prompt|baseUrl|apiKey
+    const uniqueKey = `${item.prompt}|${item.baseUrl}|${item.apiKey}`
+
+    // 如果 Map 中尚未存在该标识，则将该对象记录下来
+    if (!seen.has(uniqueKey)) {
+      seen.set(uniqueKey, item)
+    }
+  }
+
+  // 返回去重后的结果数组（从 Map 的值中提取）
+  return Array.from(seen.values())
 }

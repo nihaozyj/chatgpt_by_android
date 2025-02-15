@@ -7,16 +7,16 @@
     user: 'user',
     /** 助手 */
     assistant: 'assistant',
-  }
+  };
 </script>
 
 <script lang="ts">
-  import { beforeUpdate, onMount } from 'svelte';
+  import { onMount } from 'svelte';
   import { push } from 'svelte-spa-router';
   import db from '../script/db';
   import { marked } from 'marked';
   import Conversation from '../script/conversation';
-  import { addLongPressListener, convertToBase64, createConversation, openAlertDialog } from '../script/util';
+  import { convertToBase64, createConversation, openAlertDialog } from '../script/util';
   import { getConfig } from './Setting.svelte';
   import { createStreamChatApi } from '../script/api';
   import 'highlight.js/styles/atom-one-dark.min.css';
@@ -63,65 +63,11 @@
 
     initData();
 
-    addLongPressListener(inputContainer, 'textarea', (target) => {
-        openVoiceInputPromptBox = true;
-        navigator.mediaDevices
-            .getUserMedia({ audio: true })
-            .then(() => {
-                handleVoiceInput(); // 在获得权限后调用
-                recognitionText = ''; // 清空识别结果
-                // 处理 touchend 事件
-                const handleTouchEnd = (event: TouchEvent) => {
-                    event.preventDefault(); // 阻止默认事件
-                    openVoiceInputPromptBox = false;
-                    stopVoiceInput(); // 停止识别
-                    inputContainer.removeEventListener('touchend', handleTouchEnd); // 移除事件监听
-                };
-                inputContainer.addEventListener('touchend', handleTouchEnd);
-            })
-            .catch((err) => {
-                console.error(err);
-                openAlertDialog('提示', '获取麦克风权限失败，请在设置中允许使用麦克风');
-                openVoiceInputPromptBox = false;
-            });
+    document.addEventListener('plusready', function () {
+      const webview = plus.webview.currentWebview();
+      webview.id = 'home'; // 将当前页面标记为 'home'
     });
   });
-
-  /**
-   * 语音识别输入
-   */
-  function handleVoiceInput(): void {
-    if ('webkitSpeechRecognition' in window) {
-      if (recognition && recognition.abort()) {
-        // 停止当前识别
-        recognition.abort();
-      }
-      recognition = new (window as any).webkitSpeechRecognition();
-      // 设置识别语言为中文
-      recognition.lang = 'zh-CN';
-      // 当识别到结果时的回调函数
-      recognition.onresult = function (event: any) {
-        const transcript = event.results[0][0].transcript;
-        openVoiceInputPromptBox && handleVoiceInput();
-        recognitionText += transcript;
-      };
-      recognition.onerror = function (event: any) {
-        openVoiceInputPromptBox = false;
-      };
-      recognition.start();
-    } else {
-      openAlertDialog('提示', '你的浏览器不支持语音识别');
-      openVoiceInputPromptBox = false;
-    }
-  }
-
-  /** 停止语音识别 */
-  function stopVoiceInput(): void {
-    if (recognition) {
-      recognition.stop(); // 停止识别
-      recognition = null; // 清除识别实例
-    }
-  }
 
   let toBottomTimer: any;
 
@@ -347,7 +293,7 @@
   }
 </script>
 
-<main>
+<main class="home-page">
   <header>
     <button on:click={() => push('/history')} class="iconfont">&#xe61d;</button>
     <h1>{cutString(nowConversation?.title || '未命名对话')}</h1>
@@ -377,13 +323,7 @@
         <button class="iconfont" on:click={handleImageUpload}>&#xe60a;</button>
         <div class="input">
           <div class="input-border" style="height: {inputHeight};">
-            <textarea bind:this={textBox} on:input={updateInputHeight} placeholder="在此处输入消息，长按进行语音输入 .." bind:value={message}></textarea>
-            {#if openVoiceInputPromptBox}
-              <div class="prompt-box fadeIn">
-                <span class="iconfont">&#xe68f; 松开结束输入</span>
-                <span class="prompt-text">{recognitionText}</span>
-              </div>
-            {/if}
+            <textarea bind:this={textBox} on:input={updateInputHeight} placeholder="在此处输入消息 .." bind:value={message}></textarea>
             {#if images.length > 0}
               <div class="imgs-view">
                 {#each images as img}
@@ -532,7 +472,7 @@
     border-radius: var(--radius);
   }
 
-  .prompt-box {
+  /* .prompt-box {
     height: 100%;
     width: 100%;
     position: absolute;
@@ -548,7 +488,7 @@
     text-align: center;
     border-radius: 0.2rem;
     user-select: none;
-  }
+  } */
 
   .imgs-view {
     position: absolute;
@@ -581,7 +521,7 @@
     margin-right: 0;
   }
 
-  .prompt-text {
+  /* .prompt-text {
     position: absolute;
     top: -120px;
     background-color: var(--color-bg-strong);
@@ -593,5 +533,5 @@
     padding: 0.5rem;
     overflow-y: auto;
     border-radius: var(--radius);
-  }
+  } */
 </style>

@@ -6,8 +6,12 @@
       value: ['gpt-4o', 'gpt-4o-mini', 'o1-preview', 'o1-mini'],
     },
     {
-      label: '质谱AI',
-      value: ['GLM-4-Plus', 'GLM-4-Long', 'GLM-4-Air', 'GLM-4-FlashX', 'GLM-4-Flash', 'GLM-4V-Plus', 'ChatGLM-3'],
+      label: '深度求索(deepseek)',
+      value: ['deepseek-chat', 'deepseek-reasoner'],
+    },
+    {
+      label: '智谱AI',
+      value: ['GLM-4-Plus', 'GLM-4-Long', 'GLM-4-Air', 'GLM-4-FlashX', 'GLM-4-Flash', 'GLM-4V-Plus'],
     },
     {
       label: '通义千问',
@@ -20,7 +24,7 @@
     return {
       theme: localStorage.theme || 'dark',
       fontSize: localStorage.fontSize || '16px',
-      prompt: localStorage.prompt || '您是一个经过指令调优的自回归语言模型，致力于提供准确、基于事实的深思熟虑答案。您的用户是AI和伦理学领域的专家，对语言模型的能力和局限性有深入了解，且熟悉伦理问题。您的回答应尽量简短、使用较少的字数，除非用户明确要求详细回答，否则只需要回答问题的重点即可。回复时使用合理markdown，对不同知识点进行分类，提供良好的越度体验。',
+      prompt: localStorage.prompt || '您是一个经过指令调优的自回归语言模型，致力于提供准确、基于事实的深思熟虑答案。您的用户是AI和伦理学领域的专家，对语言模型的能力和局限性有深入了解，且熟悉伦理问题。您的回答应尽量简短。请使用合理markdown',
       baseUrl: localStorage.baseUrl || 'https://api.openai-up.com/v1',
       apiKey: localStorage.apiKey || '',
       model: localStorage.model || models[0].value[0],
@@ -32,6 +36,7 @@
 
 <script lang="ts">
   import { push } from 'svelte-spa-router';
+  import { deduplicateObjectsByKeys } from '../script/util';
 
   let config = getConfig();
 
@@ -103,7 +108,7 @@
     if (prompt || baseUrl || apiKey) {
       const lt = (localStorage.list && JSON.parse(localStorage.list)) || [];
       lt.unshift({ prompt, baseUrl, apiKey });
-      localStorage.list = JSON.stringify(lt);
+      localStorage.list = JSON.stringify(deduplicateObjectsByKeys(lt));
     }
     push('/');
   }
