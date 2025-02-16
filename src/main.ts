@@ -17,7 +17,7 @@ document.addEventListener('plusready', function () {
   const webview = plus.webview.currentWebview()
 
   plus.key.addEventListener('backbutton' as any, function () {
-    if (webview.id === 'home') {
+    if (document.getElementsByClassName('home-page').length > 0) {
       // 如果是主页，启用双击退出逻辑
       if (!firstPressTime) {
         firstPressTime = new Date().getTime()

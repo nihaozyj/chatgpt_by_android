@@ -29,6 +29,9 @@
     base64: string | null;
   }
 
+  import 'katex/dist/katex.min.css';
+  import katex from 'katex';
+
   // 存储获取到的图片
   let images: SelectedImage[] = [];
 
@@ -62,11 +65,6 @@
     }, 300);
 
     initData();
-
-    document.addEventListener('plusready', function () {
-      const webview = plus.webview.currentWebview();
-      webview.id = 'home'; // 将当前页面标记为 'home'
-    });
   });
 
   let toBottomTimer: any;
@@ -100,24 +98,66 @@
     }
   }
 
-  function escapeHtml(html: string) {
-    const text = document.createTextNode(html);
-    const div = document.createElement('div');
-    div.appendChild(text);
-    return div.innerHTML;
+  /**
+   * 将 Markdown 内容转换为 HTML，并渲染数学公式
+   * @param md - 输入的 Markdown 文本
+   * @param role - 消息的角色，用以区分处理逻辑
+   * @param item - 额外的上下文信息，用以提供扩展处理能力
+   * @returns 渲染后的 HTML 字符串
+   */
+  function mdToHtml(md: string, role: string, item: any): string {
+    // 使用 marked 渲染 Markdown 基本内容
+    const html = marked(md.trim()) as string;
+
+    // 渲染数学公式 - 区分块级公式 ([...], \[\], $$) 和行内公式 ($)
+    const formulaRendered = html
+      .replace(
+        /\[([^[]+)\]/g, // 匹配 [ ... ] （普通块级公式）
+        (_, formula) =>
+          `<div class="math-block">${katex.renderToString(formula, {
+            throwOnError: false,
+            displayMode: true, // 使用块级模式
+          })}</div>`,
+      )
+      .replace(
+        /\\\[((.|\n)*?)\\\]/g, // 匹配 \[ ... \] （带反斜杠块级公式）
+        (_, formula) =>
+          `<div class="math-block">${katex.renderToString(formula, {
+            throwOnError: false,
+            displayMode: true, // 使用块级模式
+          })}</div>`,
+      )
+      .replace(
+        /\$\$((.|\n)*?)\$\$/g, // 匹配 $$ ... $$ （块级公式）
+        (_, formula) =>
+          `<div class="math-block">${katex.renderToString(formula, {
+            throwOnError: false,
+            displayMode: true, // 使用块级模式
+          })}</div>`,
+      )
+      .replace(
+        /\$([^$]+)\$/g, // 匹配 $ ... $ （行内公式）
+        (_, formula) =>
+          `<span class="math-inline">${katex.renderToString(formula, {
+            throwOnError: false,
+            displayMode: false, // 使用行内模式
+          })}</span>`,
+      );
+
+    // 如果是用户消息，返回 Markdown 渲染结果，避免意外渲染公式
+    return role === roleType.user ? escapeHtml(md.trim()) : formulaRendered;
   }
 
-  function mdToHtml(md: string, role: string, item: any) {
-    if (role === roleType.user) {
-      let imgStr = '';
-      if (item.images) {
-        imgStr = item.images.map((img) => `<img src="${img.image_url.url}" alt="${img.name}">`);
-        console.log(item.images);
-      }
-      return imgStr + escapeHtml(md.trim());
-    } else {
-      return marked(md.trim());
-    }
+  /**
+   * HTML 特殊字符转义
+   * @param html - 待转义的文本
+   * @returns 转义后的安全 HTML 字符串
+   */
+  function escapeHtml(html: string): string {
+    const textNode = document.createTextNode(html);
+    const div = document.createElement('div');
+    div.appendChild(textNode);
+    return div.innerHTML;
   }
 
   function stop() {
